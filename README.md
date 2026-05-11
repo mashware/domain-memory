@@ -84,98 +84,63 @@ Every entry has a `confidence` (0–100) that decays **-5 points every 30 days**
 
 ## Install
 
-Domain Memory is not published to npm. It lives in this monorepo and is
-exposed system-wide with `npm link` — so you get `domain-memory`,
-`domain-memory-server` and `domain-memory-web` on your `PATH` without
-a registry. Clone once, link once, use everywhere.
+Two ways to run it. Pick the one that matches what you're trying to do.
 
-### One-time bootstrap
+### Just the MCP server (most common)
 
-```bash
-# 1. Clone the repo somewhere stable (it must not move after linking)
-git clone https://github.com/mashware/domain-memory.git
-cd domain-memory
+Add it to your MCP client's config. No global install needed — `npx` fetches and runs it on demand.
 
-# 2. Install dependencies and build all workspaces
-npm install
-npm run build
-
-# 3. Link the three packages into your global npm prefix
-npm run link:all
+```json
+{
+  "mcpServers": {
+    "domain-memory": {
+      "command": "npx",
+      "args": ["-y", "@mashware/domain-memory-server"]
+    }
+  }
+}
 ```
 
-After step 3 the following commands are available from any directory:
+That goes in `.mcp.json` (Claude Code), `.cursor/mcp.json` (Cursor), `.vscode/mcp.json` (Copilot), `.gemini/settings.json` (Gemini), or `opencode.json` (OpenCode).
 
-- `domain-memory` — the CLI (install, reindex, doctor, mode, verify, check-drift, web)
-- `domain-memory-server` — the MCP stdio server
-- `domain-memory-web` — the read-only web viewer
+Restart your client. From then on the agent will call `search_knowledge` at the start of each session.
 
-Verify the link worked:
+### Server + CLI (web viewer, install helper, drift checks)
+
+If you also want the `domain-memory` CLI (to bootstrap entries, run the web viewer, check drift, etc.):
 
 ```bash
-domain-memory --version
-which domain-memory
+npm install -g @mashware/domain-memory
 ```
 
-> If you later move or delete the repo, run `npm run unlink:all` from
-> the old location first (or the globally linked binaries will point at
-> a stale path).
-
-### Install into a project
+This installs three commands globally: `domain-memory`, `domain-memory-server`, `domain-memory-web`. Then in any project:
 
 ```bash
 cd /path/to/your/project
-domain-memory install
-#  → pick the MCP clients you use (Claude Code, Cursor, Copilot,
-#    Gemini, OpenCode)
-#  → pick the mode (Local is the default)
+domain-memory install      # writes the MCP config + pointer blocks for the clients you use
+domain-memory doctor       # sanity check
+domain-memory web          # open the viewer at http://localhost:4373
 ```
 
-`install` is idempotent: re-running updates files in place without
-clobbering your own content.
-
-### Verify and open the viewer
-
-```bash
-domain-memory doctor      # health check
-domain-memory web         # http://localhost:4373
-```
-
-Restart your MCP client (Claude Code, Cursor, etc.) so it picks up the
-newly-registered server. From then on the agent will consult
-`search_knowledge` at the start of each session and follow the rules
-in `.domain-memory/instructions.md`.
+`install` is idempotent — re-running updates files in place without clobbering your content.
 
 ### Updating
 
-When you pull new changes into the monorepo:
-
 ```bash
-cd /path/to/domain-memory
-git pull
-npm install
-npm run build
-# No need to re-link — npm link is a symlink, the rebuild is enough.
+npm update -g @mashware/domain-memory
 ```
-
-> **Node.js version change?** If you upgrade Node (or Volta resolves a
-> different version), run `npm rebuild better-sqlite3` from the monorepo
-> root. The native module must match the Node version that will execute
-> the CLI. `domain-memory doctor` will fail with a `NODE_MODULE_VERSION`
-> mismatch if this is out of sync.
 
 ### Uninstalling
 
 ```bash
-cd /path/to/domain-memory
-npm run unlink:all
+npm uninstall -g @mashware/domain-memory
 ```
 
-To remove domain-memory from a specific project, delete its
-`.domain-memory/` directory, remove the `<!-- domain-memory:start -->`
-block from the client instruction files, and drop the `domain-memory`
-entry from the MCP config files (`.mcp.json`, `.cursor/mcp.json`,
-`.vscode/mcp.json`, `.gemini/settings.json`, `opencode.json`).
+To remove domain-memory from a specific project: delete `.domain-memory/`, remove the `<!-- domain-memory:start -->` block from the client instruction files, and drop the `domain-memory` entry from `.mcp.json` / `.cursor/mcp.json` / `.vscode/mcp.json` / `.gemini/settings.json` / `opencode.json`.
+
+### From source (contributors)
+
+If you want to hack on the project itself, see [CONTRIBUTING.md](CONTRIBUTING.md) for the clone-and-link dev workflow.
 
 ---
 
@@ -320,9 +285,9 @@ domain-memory/
 │   ├── save-knowledge-command.md
 │   └── pointer-blocks/
 └── packages/
-    ├── server/              ← @domain-memory/server (MCP stdio + storage + search + flows)
-    ├── cli/                 ← @domain-memory/cli (install, reindex, doctor, mode, verify, check-drift, web)
-    └── web/                 ← @domain-memory/web (Hono SSR viewer)
+    ├── server/              ← @mashware/domain-memory-server (MCP stdio + storage + search + flows)
+    ├── cli/                 ← @mashware/domain-memory (install, reindex, doctor, mode, verify, check-drift, web)
+    └── web/                 ← @mashware/domain-memory-web (Hono SSR viewer)
 ```
 
 ---

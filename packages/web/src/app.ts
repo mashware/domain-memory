@@ -3,7 +3,7 @@
 // no PUT, no DELETE. Writes go through the CLI or the MCP tools.
 
 import { Hono } from 'hono';
-import type { ServerContext } from '@domain-memory/server';
+import type { ServerContext } from '@mashware/domain-memory-server';
 import { WebData, type WebDataOptions } from './data.js';
 import { STYLES_CSS } from './assets/styles.js';
 import { renderHome } from './views/home.js';

@@ -7,7 +7,7 @@ import { relative, join } from 'node:path';
 import {
   createServerContext,
   type ServerContext,
-} from '@domain-memory/server';
+} from '@mashware/domain-memory-server';
 
 export interface SeedEntry {
   type: 'feature' | 'aspect';

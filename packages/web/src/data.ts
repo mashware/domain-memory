@@ -9,7 +9,7 @@ import {
   parseEntry,
   stripPrivate,
   type ServerContext,
-} from '@domain-memory/server';
+} from '@mashware/domain-memory-server';
 
 export interface WebDataOptions {
   // When true, `<private>...</private>` blocks are kept verbatim in the

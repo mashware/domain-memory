@@ -15,7 +15,7 @@ import {
   createServerContext,
   effectiveConfidence,
   type Entry,
-} from '@domain-memory/server';
+} from '@mashware/domain-memory-server';
 
 export interface DecayOptions {
   root: string;

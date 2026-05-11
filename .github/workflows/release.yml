@@ -1,0 +1,118 @@
+# Domain Memory release workflow
+#
+# Publishes the three workspace packages to npm when a `v*` tag is pushed.
+# Order matters: server first, then web (depends on server), then the CLI
+# (depends on both). If any publish step fails, later steps are skipped so
+# we don't end up with a CLI that references an unpublished server.
+#
+# Trigger:
+#   git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin vX.Y.Z
+#
+# Required repository secret: NPM_TOKEN (an automation token from
+# https://www.npmjs.com/settings/<username>/tokens, with `publish` granular
+# permission scoped to @mashware/*).
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Prevent two release runs from racing on overlapping tag pushes.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_OPTIONS: --max-old-space-size=2048
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      id-token: write   # enables npm provenance attestations
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+
+      - name: Verify tag matches package versions
+        env:
+          GIT_TAG: ${{ github.ref_name }}
+        run: |
+          # Strip leading "v" from the tag — `v0.1.0` -> `0.1.0`.
+          expected="${GIT_TAG#v}"
+          for pkg in packages/server packages/web packages/cli; do
+            actual=$(node -p "require('./${pkg}/package.json').version")
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::Tag ${GIT_TAG} expects ${expected} but ${pkg}/package.json is ${actual}"
+              exit 1
+            fi
+          done
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Build all workspaces
+        run: npm run build
+
+      - name: Run tests
+        run: npm test --workspaces --if-present
+
+      # Publish order: server -> web -> cli. If one fails, the remaining
+      # steps are skipped (default behaviour) so we never publish a CLI
+      # that points at an unpublished server.
+      - name: Publish @mashware/domain-memory-server
+        working-directory: packages/server
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Publish @mashware/domain-memory-web
+        working-directory: packages/web
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Publish @mashware/domain-memory
+        working-directory: packages/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## Install
+
+            ```bash
+            # As an MCP server (no install needed)
+            # Add to .mcp.json / .cursor/mcp.json / etc.:
+            {
+              "command": "npx",
+              "args": ["-y", "@mashware/domain-memory-server"]
+            }
+
+            # CLI (install, doctor, web viewer)
+            npm install -g @mashware/domain-memory
+            ```
+
+            ## Packages published
+
+            - [`@mashware/domain-memory-server`](https://www.npmjs.com/package/@mashware/domain-memory-server)
+            - [`@mashware/domain-memory-web`](https://www.npmjs.com/package/@mashware/domain-memory-web)
+            - [`@mashware/domain-memory`](https://www.npmjs.com/package/@mashware/domain-memory)

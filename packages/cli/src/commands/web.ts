@@ -1,11 +1,11 @@
-// Starts the local web viewer. Imports the @domain-memory/web factory
+// Starts the local web viewer. Imports the @mashware/domain-memory-web factory
 // and the @hono/node-server adapter in-process so a single `domain-memory
 // web` command boots everything without spawning a child.
 
 import pc from 'picocolors';
 import { serve } from '@hono/node-server';
-import { createServerContext } from '@domain-memory/server';
-import { createApp } from '@domain-memory/web';
+import { createServerContext } from '@mashware/domain-memory-server';
+import { createApp } from '@mashware/domain-memory-web';
 
 export interface WebOptions {
   root: string;

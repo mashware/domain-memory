@@ -16,9 +16,9 @@ domain-memory/
 ├── SCHEMA.md                File layout, frontmatter, SQLite schema, tool payloads
 ├── templates/               Markdown copied into each project on install
 └── packages/
-    ├── server/              @domain-memory/server — MCP stdio + storage + search
-    ├── cli/                 @domain-memory/cli — install, reindex, doctor, web
-    └── web/                 @domain-memory/web — Hono SSR viewer
+    ├── server/              @mashware/domain-memory-server — MCP stdio + storage + search
+    ├── cli/                 @mashware/domain-memory — install, reindex, doctor, web
+    └── web/                 @mashware/domain-memory-web — Hono SSR viewer
 ```
 
 The repo is an npm workspace. Every package builds to `dist/` and is

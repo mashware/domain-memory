@@ -4,7 +4,7 @@
 // is still correct".
 
 import pc from 'picocolors';
-import { createServerContext, SaveKnowledgeFlow } from '@domain-memory/server';
+import { createServerContext, SaveKnowledgeFlow } from '@mashware/domain-memory-server';
 
 export interface VerifyOptions {
   root: string;

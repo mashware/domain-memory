@@ -1,10 +1,32 @@
 {
-  "name": "@domain-memory/cli",
+  "name": "@mashware/domain-memory",
   "version": "0.1.0",
-  "description": "Domain Memory CLI — install, reindex, check-drift, mode switch",
+  "description": "Domain Memory — local MCP server that captures the why behind your code. CLI to install, reindex, check drift, switch mode, and browse the local web viewer.",
   "type": "module",
-  "private": true,
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "domain-knowledge",
+    "knowledge-base",
+    "documentation",
+    "ai-agent",
+    "llm",
+    "claude",
+    "claude-code",
+    "cursor",
+    "copilot"
+  ],
   "author": "Alberto Vioque",
   "homepage": "https://github.com/mashware/domain-memory#readme",
   "repository": {
@@ -27,11 +49,13 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepack": "rm -rf templates && cp -r ../../templates ./templates && cp ../../README.md ./README.md && cp ../../LICENSE ./LICENSE",
+    "postpack": "rm -rf templates && rm -f README.md LICENSE"
   },
   "dependencies": {
-    "@domain-memory/server": "0.1.0",
-    "@domain-memory/web": "0.1.0",
+    "@mashware/domain-memory-server": "0.1.0",
+    "@mashware/domain-memory-web": "0.1.0",
     "@hono/node-server": "^1.13.0",
     "commander": "^12.1.0",
     "prompts": "^2.4.2",

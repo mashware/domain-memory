@@ -30,7 +30,7 @@ import {
   parseEntry,
   type Entry,
   type ServerContext,
-} from '@domain-memory/server';
+} from '@mashware/domain-memory-server';
 
 interface EvalCase {
   id: string;

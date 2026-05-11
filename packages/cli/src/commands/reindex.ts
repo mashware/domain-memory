@@ -10,7 +10,7 @@ import {
   parseEntry,
   type Entry,
   type ServerContext,
-} from '@domain-memory/server';
+} from '@mashware/domain-memory-server';
 import { readFileSync } from 'node:fs';
 import pc from 'picocolors';
 

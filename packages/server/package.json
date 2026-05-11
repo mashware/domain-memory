@@ -1,10 +1,29 @@
 {
-  "name": "@domain-memory/server",
+  "name": "@mashware/domain-memory-server",
   "version": "0.1.0",
-  "description": "Domain Memory MCP server (stdio)",
+  "description": "Domain Memory MCP server (stdio). Local-first MCP server that serves the business-domain knowledge of a project to any MCP-compatible agent.",
   "type": "module",
-  "private": true,
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "domain-knowledge",
+    "knowledge-base",
+    "ai-agent",
+    "llm",
+    "claude",
+    "cursor",
+    "copilot"
+  ],
   "author": "Alberto Vioque",
   "homepage": "https://github.com/mashware/domain-memory#readme",
   "repository": {
@@ -34,7 +53,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepack": "cp ../../README.md ./README.md && cp ../../LICENSE ./LICENSE",
+    "postpack": "rm -f README.md LICENSE"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

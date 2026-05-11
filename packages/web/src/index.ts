@@ -4,7 +4,7 @@
 // configurable port.
 
 import { serve } from '@hono/node-server';
-import { createServerContext } from '@domain-memory/server';
+import { createServerContext } from '@mashware/domain-memory-server';
 import { createApp } from './app.js';
 
 async function main(): Promise<void> {

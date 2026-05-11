@@ -36,13 +36,13 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build -w @domain-memory/server && npm run build -w @domain-memory/web && npm run build -w @domain-memory/cli",
+    "build": "npm run build -w @mashware/domain-memory-server && npm run build -w @mashware/domain-memory-web && npm run build -w @mashware/domain-memory",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "server:dev": "npm run dev --workspace=@domain-memory/server",
-    "server:start": "npm run start --workspace=@domain-memory/server",
-    "cli": "npm run start --workspace=@domain-memory/cli",
-    "web:dev": "npm run dev --workspace=@domain-memory/web",
+    "server:dev": "npm run dev --workspace=@mashware/domain-memory-server",
+    "server:start": "npm run start --workspace=@mashware/domain-memory-server",
+    "cli": "npm run start --workspace=@mashware/domain-memory",
+    "web:dev": "npm run dev --workspace=@mashware/domain-memory-web",
     "link:all": "npm link --workspaces",
     "unlink:all": "npm unlink --workspaces",
     "evals": "tsx evals/run.ts",

@@ -1,4 +1,4 @@
-// Programmatic entry point for @domain-memory/server. Re-exports the
+// Programmatic entry point for @mashware/domain-memory-server. Re-exports the
 // pieces other packages (CLI, tests, future web) need. The stdio bin
 // entry lives in src/index.ts and must not be imported as a library —
 // importing it would run the MCP server as a side effect.

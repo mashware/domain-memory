@@ -4,7 +4,7 @@
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, relative } from 'node:path';
-import { createServerContext } from '@domain-memory/server';
+import { createServerContext } from '@mashware/domain-memory-server';
 import pc from 'picocolors';
 
 export interface DoctorOptions {

@@ -56,10 +56,10 @@ token via `DOMAIN_MEMORY_HTTP_TOKEN`).
 
 In scope:
 
-- The `@domain-memory/server` MCP and HTTP surfaces.
-- The `@domain-memory/cli` install flow (it writes files into the user's
+- The `@mashware/domain-memory-server` MCP and HTTP surfaces.
+- The `@mashware/domain-memory` install flow (it writes files into the user's
   project — anything that escapes the project root is in scope).
-- The `@domain-memory/web` viewer when bound to `0.0.0.0` or exposed
+- The `@mashware/domain-memory-web` viewer when bound to `0.0.0.0` or exposed
   via a tunnel.
 - Path traversal, prompt-injection-as-persistence, dependency
   vulnerabilities surfaced by `npm audit`.

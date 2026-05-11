@@ -1,10 +1,24 @@
 {
-  "name": "@domain-memory/web",
+  "name": "@mashware/domain-memory-web",
   "version": "0.1.0",
-  "description": "Local web visualization for a domain-memory knowledge store",
+  "description": "Local web viewer for a domain-memory knowledge store. Read-only Hono-backed UI.",
   "type": "module",
-  "private": true,
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "domain-memory",
+    "knowledge-base",
+    "viewer",
+    "hono"
+  ],
   "author": "Alberto Vioque",
   "homepage": "https://github.com/mashware/domain-memory#readme",
   "repository": {
@@ -34,10 +48,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepack": "cp ../../README.md ./README.md && cp ../../LICENSE ./LICENSE",
+    "postpack": "rm -f README.md LICENSE"
   },
   "dependencies": {
-    "@domain-memory/server": "0.1.0",
+    "@mashware/domain-memory-server": "0.1.0",
     "@hono/node-server": "^1.13.0",
     "hono": "^4.12.18"
   },

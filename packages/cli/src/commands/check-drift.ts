@@ -5,7 +5,7 @@
 
 import { basename } from 'node:path';
 import pc from 'picocolors';
-import { createServerContext } from '@domain-memory/server';
+import { createServerContext } from '@mashware/domain-memory-server';
 
 export interface CheckDriftOptions {
   root: string;

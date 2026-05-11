@@ -12,7 +12,7 @@
 import pc from 'picocolors';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import { createServerContext } from '@domain-memory/server';
+import { createServerContext } from '@mashware/domain-memory-server';
 import {
   handleSearchKnowledge,
   handleSaveKnowledge,
@@ -20,7 +20,7 @@ import {
   handleReadStaging,
   handleCheckDrift,
   handleResolveTopicKey,
-} from '@domain-memory/server';
+} from '@mashware/domain-memory-server';
 
 export interface HttpOptions {
   root: string;

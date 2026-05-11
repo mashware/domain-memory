@@ -2,7 +2,7 @@
 // Useful for sharing the knowledge store with non-developers, committing
 // snapshots, or generating a browsable archive for onboarding.
 //
-// Strategy: reuse @domain-memory/web's createApp() and call app.fetch()
+// Strategy: reuse @mashware/domain-memory-web's createApp() and call app.fetch()
 // for each route we care about, writing the response body to a URL-
 // matching directory layout. Absolute links in the rendered HTML keep
 // working as long as the directory is served from the root of a static
@@ -11,8 +11,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import pc from 'picocolors';
-import { createServerContext } from '@domain-memory/server';
-import { createApp, WebData } from '@domain-memory/web';
+import { createServerContext } from '@mashware/domain-memory-server';
+import { createApp, WebData } from '@mashware/domain-memory-web';
 
 export interface ExportOptions {
   root: string;

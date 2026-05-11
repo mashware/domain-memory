@@ -56,5 +56,11 @@ models/
 # Presentation (talk material kept outside the repo)
 presentation/
 
+# Transient publish artefacts — `prepack` copies these into each package
+# right before `npm pack` / `npm publish`; `postpack` removes them after.
+packages/cli/templates/
+packages/*/README.md
+packages/*/LICENSE
+
 # Eval runner output (baseline.json is committed; last-run.json is per-machine)
 evals/last-run.json

@@ -1,0 +1,25 @@
+{"id":"path-01","category":"path","query":"what does this do","context":{"file_paths":["src/checkout/index.ts"]},"expected":"feat_checkout"}
+{"id":"path-02","category":"path","query":"explain","context":{"file_paths":["src/auth/jwt.ts"]},"expected":"asp_auth_jwt"}
+{"id":"path-03","category":"path","query":"context","context":{"symbols":["StripeWebhookHandler"]},"expected":"asp_checkout_stripe"}
+{"id":"path-04","category":"path","query":"this module","context":{"file_paths":["src/invoicing/tax-service.ts"]},"expected":"feat_invoicing"}
+{"id":"path-05","category":"path","query":"x","context":{"symbols":["AuthService"]},"expected":"feat_auth"}
+{"id":"semantic-01","category":"semantic","query":"how do users sign in to the application","expected":"feat_auth"}
+{"id":"semantic-02","category":"semantic","query":"where do we charge customers credit cards","expected":"asp_checkout_stripe"}
+{"id":"semantic-03","category":"semantic","query":"computing value added tax for purchases","expected":"asp_checkout_taxes"}
+{"id":"semantic-04","category":"semantic","query":"verifying user identity tokens on requests","expected":"asp_auth_jwt"}
+{"id":"semantic-05","category":"semantic","query":"sending receipts to buyers after a sale","expected":"feat_invoicing"}
+{"id":"keyword-01","category":"keyword","query":"stripe webhook PaymentIntent","expected":"asp_checkout_stripe"}
+{"id":"keyword-02","category":"keyword","query":"checkout cart paid order","expected":"feat_checkout"}
+{"id":"keyword-03","category":"keyword","query":"AuthService session lifecycle","expected":"feat_auth"}
+{"id":"keyword-04","category":"keyword","query":"external tax-service compliant invoice numbering","expected":"feat_invoicing"}
+{"id":"keyword-05","category":"keyword","query":"JwtValidator JWKS public keys","expected":"asp_auth_jwt"}
+{"id":"adv-token-01","category":"keyword","query":"how do we tokenize the search query","expected":"asp_search_tokens"}
+{"id":"adv-token-02","category":"keyword","query":"validate bearer token signature on every request","expected":"asp_auth_jwt"}
+{"id":"adv-stripe-01","category":"keyword","query":"one-off purchase PaymentIntent capture","expected":"asp_checkout_stripe"}
+{"id":"adv-stripe-02","category":"keyword","query":"recurring monthly subscription Stripe charges","expected":"asp_billing_stripe_subscriptions"}
+{"id":"adv-stripe-03","category":"keyword","query":"invoice.paid webhook subscription syncer","expected":"asp_billing_stripe_subscriptions"}
+{"id":"adv-semantic-01","category":"semantic","query":"figure out the levy applied to a buyer's order","expected":"asp_checkout_taxes"}
+{"id":"adv-semantic-02","category":"semantic","query":"prove the caller is who they claim to be on each API call","expected":"asp_auth_jwt"}
+{"id":"adv-semantic-03","category":"semantic","query":"retry failed monthly charges before kicking the customer out","expected":"feat_billing"}
+{"id":"adv-path-conflict-01","category":"path","query":"recurring billing","context":{"file_paths":["src/checkout/stripe.ts"]},"expected":"asp_checkout_stripe"}
+{"id":"adv-aspect-01","category":"keyword","query":"strip diacritics and lowercase before indexing","expected":"asp_search_tokens"}

@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest a capability, change, or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Domain Memory aims to stay small and opinionated. Not every request
+        will be accepted — the bar is "does this help most users, or just
+        my specific workflow?". Please describe both the problem and the
+        proposed shape so we can have that conversation.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do that today is hard or impossible?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: |
+        How would you change Domain Memory to solve this? CLI flag,
+        new tool, change to an existing tool, new template, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you try, and why was it not enough?
+    validations:
+      required: false
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope check
+      description: |
+        Domain Memory is local-first and pre-1.0. Think about whether this
+        change is additive (low risk) or breaks an existing contract (high
+        risk). Be honest — it helps prioritisation.
+    validations:
+      required: false

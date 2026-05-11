@@ -1,0 +1,90 @@
+name: Bug report
+description: Something does not behave the way the docs say it should.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please fill in as much of
+        the form below as you can — the more concrete the report, the faster
+        it gets fixed.
+
+        For security-related issues, please **do not open a public issue**.
+        See [SECURITY.md](https://github.com/mashware/domain-memory/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, and what did you observe?
+      placeholder: |
+        Ran `domain-memory install` in a fresh project and...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: What would have been the correct behaviour?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal repro
+      description: |
+        Smallest sequence of commands or a tiny knowledge tree (one feature,
+        one aspect) that triggers the bug. If the bug only shows up against
+        a private project, please redact paths but keep the shape.
+      render: shell
+    validations:
+      required: false
+
+  - type: input
+    id: dm-version
+    attributes:
+      label: domain-memory version
+      description: Output of `domain-memory --version`.
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      description: Output of `node --version`.
+      placeholder: v24.14.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows (WSL)
+        - Windows (native)
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: domain-memory doctor output
+      description: Paste the output of `domain-memory doctor`. It catches a lot of environment issues on its own.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Logs, screenshots, MCP client (Claude Code / Cursor / etc.), whatever feels relevant.
+    validations:
+      required: false

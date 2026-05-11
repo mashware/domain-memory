@@ -1,0 +1,47 @@
+{
+  "name": "@domain-memory/cli",
+  "version": "0.1.0",
+  "description": "Domain Memory CLI — install, reindex, check-drift, mode switch",
+  "type": "module",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Alberto Vioque",
+  "homepage": "https://github.com/mashware/domain-memory#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mashware/domain-memory.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/mashware/domain-memory/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "main": "dist/index.js",
+  "bin": {
+    "domain-memory": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@domain-memory/server": "0.1.0",
+    "@domain-memory/web": "0.1.0",
+    "@hono/node-server": "^1.13.0",
+    "commander": "^12.1.0",
+    "prompts": "^2.4.2",
+    "picocolors": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/prompts": "^2.4.9",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

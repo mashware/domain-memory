@@ -1,0 +1,75 @@
+# Domain Memory CI
+#
+# Runs typecheck, unit tests, and the eval suite on every push and PR.
+# Mirrors what the previous GitLab pipeline did, adapted to GitHub Actions
+# conventions (job-level caching, matrix-free single-runner setup).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same branch to save minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Transformers.js downloads the MiniLM model on first run; pin the cache
+  # to a workspace path so actions/cache picks it up.
+  TRANSFORMERS_CACHE: ${{ github.workspace }}/.cache/transformers
+  XDG_CACHE_HOME: ${{ github.workspace }}/.cache
+  NODE_OPTIONS: --max-old-space-size=2048
+
+jobs:
+  verify:
+    name: Typecheck, test, evals
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      # The 90 MB MiniLM model is keyed independently of package-lock.json
+      # so it survives dependency churn.
+      - name: Cache Transformers model
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: transformers-model-v1
+
+      # Install + build. `npm ci` runs the root postinstall hook which
+      # already rebuilds better-sqlite3 against the active Node, so no
+      # explicit `npm rebuild` is needed.
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Build all workspaces
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck --workspaces
+
+      - name: Unit tests
+        run: npm test --workspaces --if-present
+
+      - name: Evals (regression check)
+        run: npm run evals -- --fail-on-regression 0.05
+
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evals-last-run
+          path: evals/last-run.json
+          retention-days: 30

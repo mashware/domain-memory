@@ -1,0 +1,68 @@
+{
+  "name": "domain-memory",
+  "version": "0.1.0",
+  "description": "Local MCP server that accumulates the business-domain knowledge of a software project — the why behind the code.",
+  "type": "module",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Alberto Vioque",
+    "url": "https://github.com/mashware"
+  },
+  "homepage": "https://github.com/mashware/domain-memory#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mashware/domain-memory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mashware/domain-memory/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "knowledge-base",
+    "domain-knowledge",
+    "documentation",
+    "agent",
+    "llm",
+    "claude",
+    "cursor",
+    "copilot"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @domain-memory/server && npm run build -w @domain-memory/web && npm run build -w @domain-memory/cli",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "server:dev": "npm run dev --workspace=@domain-memory/server",
+    "server:start": "npm run start --workspace=@domain-memory/server",
+    "cli": "npm run start --workspace=@domain-memory/cli",
+    "web:dev": "npm run dev --workspace=@domain-memory/web",
+    "link:all": "npm link --workspaces",
+    "unlink:all": "npm unlink --workspaces",
+    "evals": "tsx evals/run.ts",
+    "postinstall": "npm rebuild better-sqlite3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "volta": {
+    "node": "24.14.1"
+  },
+  "overrides": {
+    "protobufjs": "^7.5.5",
+    "fast-uri": "^3.1.2",
+    "ip-address": "^10.1.1",
+    "vite": "^6.4.2",
+    "postcss": "^8.5.10",
+    "esbuild": "^0.25.0"
+  }
+}

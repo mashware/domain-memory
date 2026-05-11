@@ -1,0 +1,50 @@
+{
+  "name": "@domain-memory/web",
+  "version": "0.1.0",
+  "description": "Local web visualization for a domain-memory knowledge store",
+  "type": "module",
+  "private": true,
+  "license": "Apache-2.0",
+  "author": "Alberto Vioque",
+  "homepage": "https://github.com/mashware/domain-memory#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mashware/domain-memory.git",
+    "directory": "packages/web"
+  },
+  "bugs": {
+    "url": "https://github.com/mashware/domain-memory/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "main": "dist/lib.js",
+  "types": "dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "import": "./dist/lib.js"
+    }
+  },
+  "bin": {
+    "domain-memory-web": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@domain-memory/server": "0.1.0",
+    "@hono/node-server": "^1.13.0",
+    "hono": "^4.12.18"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

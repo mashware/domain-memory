@@ -8,12 +8,10 @@
 # Trigger:
 #   git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin vX.Y.Z
 #
-# Authentication: uses an npm Granular Access Token with the "Bypass 2FA"
-# flag enabled (npm CLI requires OTP otherwise, which CI cannot provide).
-# Stored in the `NPM_TOKEN` repository secret.
-#
-# Future: once all three packages exist on npm we can configure Trusted
-# Publishing (OIDC) on each package's settings page and remove the token.
+# Authentication: npm Trusted Publishing (OIDC). No NPM_TOKEN required —
+# each package on npmjs.com is configured to trust publishes coming from
+# this repo and this workflow file. Provenance attestations are generated
+# automatically.
 
 name: Release
 
@@ -38,7 +36,7 @@ jobs:
 
     permissions:
       contents: write   # required by softprops/action-gh-release
-      id-token: write   # enables npm provenance attestations
+      id-token: write   # enables npm Trusted Publishing (OIDC) + provenance
 
     steps:
       - name: Checkout
@@ -77,22 +75,20 @@ jobs:
       # Publish order: server -> web -> cli. If one fails, the remaining
       # steps are skipped (default behaviour) so we never publish a CLI
       # that points at an unpublished server.
+      #
+      # No NODE_AUTH_TOKEN: npm CLI detects the GitHub Actions OIDC
+      # environment and exchanges it for a short-lived publish token
+      # against the trusted publisher configured for each package.
       - name: Publish @mashware/domain-memory-server
         working-directory: packages/server
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
 
       - name: Publish @mashware/domain-memory-web
         working-directory: packages/web
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
 
       - name: Publish @mashware/domain-memory
         working-directory: packages/cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
 
       - name: Create GitHub Release

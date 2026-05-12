@@ -23,6 +23,13 @@ release. Patch releases are bug-fix-only.
 - `presentation/` directory (talk material moved out of the repo).
 - `.gitlab-ci.yml` (replaced by GitHub Actions).
 
+## [0.1.1] — 2026-05-12
+
+### Fixed
+- Initial publish only released `@mashware/domain-memory-server`
+  because the npm token was scoped to that single package. This
+  release publishes all three workspaces together.
+
 ## [0.1.0] — 2026-05-11
 
 Initial public release.
@@ -51,5 +58,6 @@ Initial public release.
 - Eval suite with an adversarial corpus and per-machine regression
   detection (`evals/baseline.json`).
 
-[Unreleased]: https://github.com/mashware/domain-memory/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mashware/domain-memory/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/mashware/domain-memory/releases/tag/v0.1.1
 [0.1.0]: https://github.com/mashware/domain-memory/releases/tag/v0.1.0

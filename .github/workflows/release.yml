@@ -8,9 +8,12 @@
 # Trigger:
 #   git tag -a vX.Y.Z -m "Release X.Y.Z" && git push origin vX.Y.Z
 #
-# Required repository secret: NPM_TOKEN (an automation token from
-# https://www.npmjs.com/settings/<username>/tokens, with `publish` granular
-# permission scoped to @mashware/*).
+# Authentication: uses an npm Granular Access Token with the "Bypass 2FA"
+# flag enabled (npm CLI requires OTP otherwise, which CI cannot provide).
+# Stored in the `NPM_TOKEN` repository secret.
+#
+# Future: once all three packages exist on npm we can configure Trusted
+# Publishing (OIDC) on each package's settings page and remove the token.
 
 name: Release
 
@@ -34,7 +37,7 @@ jobs:
     timeout-minutes: 20
 
     permissions:
-      contents: read
+      contents: write   # required by softprops/action-gh-release
       id-token: write   # enables npm provenance attestations
 
     steps:

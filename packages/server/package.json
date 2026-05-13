@@ -1,6 +1,6 @@
 {
   "name": "@mashware/domain-memory-server",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Domain Memory MCP server (stdio). Local-first MCP server that serves the business-domain knowledge of a project to any MCP-compatible agent.",
   "type": "module",
   "license": "Apache-2.0",

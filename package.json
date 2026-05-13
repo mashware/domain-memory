@@ -1,6 +1,6 @@
 {
   "name": "domain-memory",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Local MCP server that accumulates the business-domain knowledge of a software project — the why behind the code.",
   "type": "module",
   "private": true,

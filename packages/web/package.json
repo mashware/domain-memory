@@ -1,6 +1,6 @@
 {
   "name": "@mashware/domain-memory-web",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Local web viewer for a domain-memory knowledge store. Read-only Hono-backed UI.",
   "type": "module",
   "license": "Apache-2.0",
@@ -53,7 +53,7 @@
     "postpack": "rm -f README.md LICENSE"
   },
   "dependencies": {
-    "@mashware/domain-memory-server": "0.2.0",
+    "@mashware/domain-memory-server": "0.2.1",
     "@hono/node-server": "^1.13.0",
     "hono": "^4.12.18"
   },

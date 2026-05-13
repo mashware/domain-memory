@@ -17,15 +17,12 @@ import {
   readSlashCommandTemplate,
 } from './templates.js';
 
-export type InstallMode = 'local' | 'team-direct' | 'team-validated';
-
 const POINTER_START = '<!-- domain-memory:start -->';
 const POINTER_END = '<!-- domain-memory:end -->';
 
 export interface WriteContext {
   projectRoot: string;
   serverCommand: { command: string; args: string[] };
-  mode: InstallMode;
 }
 
 // ----- Pointer blocks ---------------------------------------------------
@@ -171,7 +168,6 @@ export function writeConfig(ctx: WriteContext, clients: ClientId[]): void {
   mkdirSync(dirname(target), { recursive: true });
   const payload = {
     version: '0.1.0',
-    mode: ctx.mode,
     clients,
     installed_at: new Date().toISOString(),
   };

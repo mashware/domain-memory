@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runInstall } from './install.js';
 
 // The install orchestrator shells out to the interactive prompt library
-// when options are missing. The tests always pass {clients, mode, yes}
+// when options are missing. The tests always pass {clients, yes}
 // so no prompt ever runs, and rely on DOMAIN_MEMORY_TEMPLATES to point
 // at the templates directory shipped in the repo root.
 
@@ -40,7 +40,6 @@ describe('runInstall orchestrator', () => {
 
     await runInstall({
       root,
-      mode: 'local',
       clients: ['claude-code', 'cursor'],
       yes: true,
     });
@@ -57,19 +56,17 @@ describe('runInstall orchestrator', () => {
     expect(existsSync(join(root, '.cursor/mcp.json'))).toBe(true);
   });
 
-  it('persists mode and clients in config.json', async () => {
+  it('persists clients in config.json', async () => {
     await runInstall({
       root,
-      mode: 'team-validated',
       clients: ['opencode'],
       yes: true,
     });
 
     const config = JSON.parse(
       readFileSync(join(root, '.domain-memory/config.json'), 'utf-8'),
-    ) as { mode: string; clients: string[]; version: string };
+    ) as { clients: string[]; version: string };
 
-    expect(config.mode).toBe('team-validated');
     expect(config.clients).toEqual(['opencode']);
     expect(config.version).toBeDefined();
   });
@@ -77,13 +74,11 @@ describe('runInstall orchestrator', () => {
   it('is fully idempotent — running twice leaves one pointer block and one gitignore entry', async () => {
     await runInstall({
       root,
-      mode: 'local',
       clients: ['claude-code'],
       yes: true,
     });
     await runInstall({
       root,
-      mode: 'local',
       clients: ['claude-code'],
       yes: true,
     });
@@ -111,7 +106,6 @@ describe('runInstall orchestrator', () => {
 
     await runInstall({
       root,
-      mode: 'local',
       clients: ['claude-code'],
       yes: true,
     });
@@ -139,7 +133,6 @@ describe('runInstall orchestrator', () => {
 
     await runInstall({
       root,
-      mode: 'local',
       clients: ['claude-code'],
       yes: true,
     });
@@ -154,7 +147,6 @@ describe('runInstall orchestrator', () => {
   it('configures all five clients when selected', async () => {
     await runInstall({
       root,
-      mode: 'local',
       clients: ['claude-code', 'cursor', 'copilot', 'gemini', 'opencode'],
       yes: true,
     });

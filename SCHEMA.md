@@ -33,7 +33,7 @@ Everything lives under `.domain-memory/` at the root of the project where it is 
 .domain-memory/errors.log
 ```
 
-Everything else (`knowledge/`, `instructions.md`, `config.json`) **is committed**. In Phase 3, changes to `knowledge/` appear in the MR diff and are what the human reviewer reads.
+Everything else (`knowledge/`, `instructions.md`, `config.json`) **is committed**. Changes to `knowledge/` show up in diffs alongside the code changes, so reviewers can read them in the same place.
 
 **Slugs**: lowercase, kebab-case, `[a-z0-9-]` only. Generated from the human name by the agent, fixed at entry creation.
 
@@ -331,7 +331,7 @@ CREATE TABLE pending_conflicts (
 );
 ```
 
-In Phase 1 this table is almost always empty because conflicts are resolved live. It exists for Phase 3 where a conflict can travel to the MR.
+This table is almost always empty because conflicts are resolved live.
 
 ---
 

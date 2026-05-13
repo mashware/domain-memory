@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 // Domain Memory CLI — entry point.
-// Commands: reindex, doctor. More coming (install, mode, check-drift).
 
 import { Command } from 'commander';
 import pc from 'picocolors';
 import { runReindex } from './commands/reindex.js';
 import { runDoctor } from './commands/doctor.js';
 import { runInstall } from './commands/install.js';
-import { runMode } from './commands/mode.js';
 import { runCheckDrift, readStdinLines } from './commands/check-drift.js';
 import { runVerify } from './commands/verify.js';
 import { runWeb } from './commands/web.js';
@@ -17,7 +15,6 @@ import { runExport } from './commands/export.js';
 import { runBootstrap } from './commands/bootstrap.js';
 import { runEnrich } from './commands/enrich.js';
 import type { ClientId } from './install/detect.js';
-import type { InstallMode } from './install/writers.js';
 
 const program = new Command();
 
@@ -40,10 +37,6 @@ program
   .description('Configure domain-memory for a project — interactive by default')
   .option('-r, --root <path>', 'Project root (defaults to cwd)', process.cwd())
   .option(
-    '-m, --mode <mode>',
-    'Install mode: local | team-direct | team-validated',
-  )
-  .option(
     '-c, --clients <list>',
     'Comma-separated client ids to configure (skips the prompt)',
   )
@@ -51,15 +44,13 @@ program
   .action(
     async (opts: {
       root: string;
-      mode?: string;
       clients?: string;
       yes: boolean;
     }) => {
-      const mode = opts.mode as InstallMode | undefined;
       const clients = opts.clients
         ? (opts.clients.split(',').map((s) => s.trim()) as ClientId[])
         : undefined;
-      await runInstall({ root: opts.root, mode, clients, yes: opts.yes });
+      await runInstall({ root: opts.root, clients, yes: opts.yes });
     },
   );
 
@@ -69,17 +60,6 @@ program
   .option('-r, --root <path>', 'Project root (defaults to cwd)', process.cwd())
   .action(async (opts: { root: string }) => {
     const code = await runDoctor({ root: opts.root });
-    process.exit(code);
-  });
-
-program
-  .command('mode [target]')
-  .description(
-    'Show or switch install mode (local, team-direct, team-validated)',
-  )
-  .option('-r, --root <path>', 'Project root (defaults to cwd)', process.cwd())
-  .action(async (target: string | undefined, opts: { root: string }) => {
-    const code = await runMode({ root: opts.root, target });
     process.exit(code);
   });
 

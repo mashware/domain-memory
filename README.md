@@ -12,7 +12,7 @@ A local MCP server that accumulates the **business-domain knowledge** of a softw
 
 The goal is to capture the **why** behind the code: the stuff a new developer would need six months from now to understand why a thing is built the way it is. The **what** is already in the code — domain-memory does not duplicate it.
 
-> **Status**: Phase 1 is functional. Local install, single developer, local SQLite. Phase 2/3 (shared team modes with PR-based validation) are on the roadmap.
+> **Status**: Functional. Local install, single developer, local SQLite.
 
 ## How is this different from…
 
@@ -34,7 +34,7 @@ If you're asking "where does the agent remember that I prefer dark mode?", you w
 Three principles run the whole system:
 
 1. **The LLM is the criterion, the MCP is the store.** All judgment calls — "does this contradict existing knowledge?", "is this worth remembering?" — live in the agent. The server just persists, searches, and reports. Semantic reasoning never happens in SQL.
-2. **Markdown on disk is the source of truth.** Every entry is a human-readable `.md` file under `.domain-memory/knowledge/`. SQLite is a derived index that can be rebuilt from disk at any time (`domain-memory reindex`). In Phase 3 this is also what makes GitLab MR review possible — the diff shows the knowledge changes alongside the code changes.
+2. **Markdown on disk is the source of truth.** Every entry is a human-readable `.md` file under `.domain-memory/knowledge/`. SQLite is a derived index that can be rebuilt from disk at any time (`domain-memory reindex`).
 3. **Failures are silent.** A down embedder, a slow query, a corrupted staging line — none of it is ever surfaced to the agent session. If domain-memory cannot help, it stays out of the way.
 
 ### Unit of knowledge: Feature + Aspects
@@ -153,7 +153,6 @@ If you want to hack on the project itself, see [CONTRIBUTING.md](CONTRIBUTING.md
 | `domain-memory enrich <id\|slug>` | Print a guided prompt to deepen an existing feature entry. Useful for ritualized "spend 20 minutes improving checkout" sessions. |
 | `domain-memory reindex [--fresh]` | Rebuilds `index.sqlite` and embeddings from the markdown files on disk. Use `--fresh` to wipe the index first. |
 | `domain-memory doctor` | Read-only health check: index vs. disk consistency, broken file references, embedding coverage, stale staging files. |
-| `domain-memory mode [target]` | Show or switch install mode between `local`, `team-direct`, `team-validated`. |
 | `domain-memory verify <entry-id>` | Mark an entry as verified now. Resets the lazy confidence decay clock. Body unchanged. |
 | `domain-memory check-drift --files a.ts,b.ts` | Print the knowledge entries that reference the given files. Supports `--json` and stdin for git hooks. |
 | `domain-memory web [--port 4373]` | Start the local read-only viewer. |
@@ -328,15 +327,6 @@ The markdown templates live at `templates/` and are resolved at install time via
 | `DOMAIN_MEMORY_DRIFT_TIMEOUT_MS` | `2000` | Hard budget for `check_drift`. |
 | `DOMAIN_MEMORY_WEB_PORT` | `4373` | Port for `domain-memory-web`. |
 | `DOMAIN_MEMORY_HTTP_TOKEN` | — | If set, the HTTP API requires `Authorization: Bearer <token>` on every `/api/*` route. |
-
----
-
-## Roadmap
-
-- **Phase 2 — Team Direct**: shared knowledge store over a remote SQLite/Postgres backend. No validation layer. For small, trusted teams only.
-- **Phase 3 — Team Validated**: proposals travel as comments on GitHub pull requests (or GitLab merge requests). A pipeline agent validates and merges approved knowledge into the shared store. Requires a team API key.
-
-See [CHANGELOG.md](CHANGELOG.md) for what has shipped.
 
 ---
 

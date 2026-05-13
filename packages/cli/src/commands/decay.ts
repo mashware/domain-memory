@@ -8,7 +8,7 @@
 // check_drift, web viewer) already surfaces the effective confidence
 // at read time via effectiveConfidence(). decay --write is useful when
 // you want the on-disk source of truth to reflect reality — for
-// example before committing the knowledge to git in Phase 3.
+// example before committing the knowledge to git.
 
 import pc from 'picocolors';
 import {

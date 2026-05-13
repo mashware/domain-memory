@@ -78,7 +78,7 @@ Returns top candidates with scores. The agent decides: create, update, conflict,
 
 **Conflicts block the save**: if the agent detects a contradiction, it does not write. It creates a `pending_conflict` with the two versions and asks the developer there and then *"this contradicts entry X — which is correct?"*. It is resolved now or it is not saved. Nothing stays pending.
 
-In Phase 1 the conflict is resolved by whoever triggered it. In Phase 3 it goes into the MR comment and is resolved by the reviewer.
+The conflict is resolved by whoever triggered it.
 
 ## Drift with the code — Self-healing + PR checkpoint
 
@@ -104,18 +104,9 @@ In Phase 1 the conflict is resolved by whoever triggered it. In Phase 3 it goes 
 - If the initial session query takes longer than 2s, it is cancelled and the session starts without knowledge.
 - Explicit non-functional requirement in the README.
 
-## Phases — Deployment modes
+## Deployment
 
-**Phase 1 — Local** (default path to get started)
-One developer, one machine, local database (SQLite + local embedding index). Zero infrastructure. Uses the user's existing subscription.
-
-**Phase 3 — Team Validated** (default path for teams)
-Knowledge proposals travel as a comment on the merge request. The reviewer approves, rejects, or edits them alongside the code. The pipeline only ships validated content to the shared database. Requires a team API key for the pipeline agent.
-
-**Phase 2 — Team Direct** (optional, discouraged)
-Shared database without validation. Exists for small, high-trust teams. Explicitly marked in the installer as *"no-safety-net mode"*. Not default.
-
-The interactive install script asks the mode and generates the configuration. Switching mode later is a command.
+One developer, one machine, local database (SQLite + local embedding index). Zero infrastructure. The interactive install script generates the configuration.
 
 ## Generated agent instructions
 
@@ -135,7 +126,7 @@ The installer writes a section into the project's agent instruction file (e.g. `
 - Graph of relations between features.
 - Panel of entries with `confidence < 50` for review.
 - `possibly stale` panel with the diff alongside.
-- `pending_conflict` panel (almost empty in Phase 1 because conflicts are resolved live).
+- `pending_conflict` panel (almost always empty because conflicts are resolved live).
 - Export to Markdown or static HTML.
 
 ## Cross-cutting principles
@@ -144,7 +135,6 @@ The installer writes a section into the project's agent instruction file (e.g. `
 - **The agent's context is an ephemeral cache, never a store.** Everything important lives in MCP + staging.
 - **Silence by default.** If the developer has to fight the system, the system dies.
 - **Failures never break the session.** Silent degradation is a requirement, not a feature.
-- **The three phases must coexist from day one.** Phase-1 code doesn't break when the other phases are added.
 - **Checkpoint at the cheapest moment**: opening a PR, when the developer has fresh context.
 
 ## Repository layout (proposed)
@@ -156,14 +146,14 @@ domain-memory/
 │   ├── search/          ← triple matcher
 │   ├── staging/         ← per-branch staging management
 │   └── drift/           ← detection and hashes
-├── cli/                 ← install script, check-drift, mode switch
+├── cli/                 ← install script, check-drift
 ├── web/                 ← local visualisation
 ├── templates/
 │   └── instructions.md  ← template written at install time
 └── docs/
 ```
 
-## Implementation order — Phase 1
+## Implementation order
 
 1. Agent instructions template — defines behaviour.
 2. Data schema — `feature.md`, `aspect.md`, staging `.jsonl`, metadata.
@@ -171,5 +161,5 @@ domain-memory/
 4. Triple matcher.
 5. Per-branch staging + consolidation at PR time.
 6. Drift check — hashes and PR checkpoint.
-7. CLI — install script, `check-drift`, mode switch.
+7. CLI — install script, `check-drift`.
 8. Local web — last.

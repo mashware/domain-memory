@@ -30,7 +30,6 @@ function makeContext(root: string): WriteContext {
   return {
     projectRoot: root,
     serverCommand: FAKE_SERVER,
-    mode: 'local',
   };
 }
 
@@ -297,15 +296,13 @@ describe('install writers', () => {
       expect(readFileSync(target, 'utf-8')).toBe('# my custom primer\n');
     });
 
-    it('writes .domain-memory/config.json with mode and clients', () => {
+    it('writes .domain-memory/config.json with the selected clients', () => {
       writeConfig(ctx, ['claude-code', 'cursor']);
       const target = join(root, '.domain-memory/config.json');
       const parsed = JSON.parse(readFileSync(target, 'utf-8')) as {
-        mode: string;
         clients: string[];
         installed_at: string;
       };
-      expect(parsed.mode).toBe('local');
       expect(parsed.clients).toEqual(['claude-code', 'cursor']);
       expect(parsed.installed_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });

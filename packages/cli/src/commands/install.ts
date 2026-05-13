@@ -1,7 +1,7 @@
 // Interactive install flow. Detects the clients present in the project,
-// asks the user which to configure and which mode to run, then writes
-// every target file idempotently. Safe to re-run — it will update
-// existing files in place instead of duplicating.
+// asks the user which to configure, then writes every target file
+// idempotently. Safe to re-run — it will update existing files in
+// place instead of duplicating.
 
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,13 +17,11 @@ import {
   writePointerBlock,
   writePrimerIfMissing,
   writeSlashCommand,
-  type InstallMode,
   type WriteContext,
 } from '../install/writers.js';
 
 export interface InstallOptions {
   root: string;
-  mode?: InstallMode;
   clients?: ClientId[];
   yes?: boolean;
 }
@@ -53,17 +51,10 @@ export async function runInstall(opts: InstallOptions): Promise<void> {
     return;
   }
 
-  const mode = await chooseMode(opts);
-  if (!mode) {
-    process.stdout.write(pc.yellow('No mode selected — aborting.\n'));
-    return;
-  }
-
   const serverCommand = resolveServerCommand(here);
   const ctx: WriteContext = {
     projectRoot: opts.root,
     serverCommand,
-    mode,
   };
 
   process.stdout.write(pc.bold('\nWriting files...\n'));
@@ -139,39 +130,6 @@ async function chooseClients(
   });
 
   return (response['selected'] as ClientId[] | undefined) ?? [];
-}
-
-async function chooseMode(opts: InstallOptions): Promise<InstallMode | null> {
-  if (opts.mode) return opts.mode;
-  if (opts.yes) return 'local';
-
-  const response = await prompts({
-    type: 'select',
-    name: 'mode',
-    message: 'Which mode?',
-    choices: [
-      {
-        title: 'Local',
-        description: 'Single developer, local state. Recommended default.',
-        value: 'local' as const,
-      },
-      {
-        title: 'Team Direct',
-        description:
-          'Shared store, no validation. Only for small trusted teams — no safety net.',
-        value: 'team-direct' as const,
-      },
-      {
-        title: 'Team Validated',
-        description:
-          'Shared store with MR-based review. Requires a team API key. Recommended for teams.',
-        value: 'team-validated' as const,
-      },
-    ],
-    initial: 0,
-  });
-
-  return (response['mode'] as InstallMode | undefined) ?? null;
 }
 
 function logStep(line: string): void {

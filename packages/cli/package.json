@@ -1,6 +1,6 @@
 {
   "name": "@mashware/domain-memory",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Domain Memory — local MCP server that captures the why behind your code. CLI to install, reindex, check drift, and browse the local web viewer.",
   "type": "module",
   "license": "Apache-2.0",
@@ -54,8 +54,8 @@
     "postpack": "rm -rf templates && rm -f README.md LICENSE"
   },
   "dependencies": {
-    "@mashware/domain-memory-server": "0.2.2",
-    "@mashware/domain-memory-web": "0.2.2",
+    "@mashware/domain-memory-server": "0.2.3",
+    "@mashware/domain-memory-web": "0.2.3",
     "@hono/node-server": "^1.13.0",
     "commander": "^12.1.0",
     "prompts": "^2.4.2",

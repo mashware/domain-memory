@@ -1,8 +1,16 @@
 // Parses and serializes feature.md / aspect.md files.
 // Markdown on disk is the source of truth. Frontmatter is YAML. The body has
-// three required sections: "## What it does", "## How it flows" (optional for
-// aspects), "## Where it lives". The Mermaid diagram lives inside the
-// "How it flows" section, fenced as ```mermaid.
+// three sections: "## What it does", "## How it flows" (optional), and
+// "## Where it lives". The Mermaid diagram lives inside the "How it flows"
+// section, fenced as ```mermaid.
+//
+// Section headings are matched case- and accent-insensitively and accept
+// localized aliases (e.g. "## Qué hace"), because knowledge files authored by
+// agents in a non-English project must still parse. Only these three headings
+// delimit sections — any other "## ..." heading is plain content of the
+// section it sits under, never a boundary, so free-form prose subheadings are
+// preserved verbatim. serializeEntry always re-emits the canonical English
+// headings, so saving an entry normalizes a localized heading back.
 
 import matter from 'gray-matter';
 import type { Entry, EntryBody, EntryFrontmatter } from './types.js';
@@ -11,6 +19,40 @@ import { stripPrivate } from './redact.js';
 const SECTION_WHAT = '## What it does';
 const SECTION_FLOW = '## How it flows';
 const SECTION_WHERE = '## Where it lives';
+
+type SectionKey = 'what' | 'flow' | 'where';
+
+// Accepted headings per canonical section, pre-normalized (no marker, lower
+// case, diacritics stripped) so matching is a plain string compare.
+const SECTION_ALIASES: ReadonlyArray<readonly [SectionKey, readonly string[]]> =
+  [
+    ['what', ['what it does', 'que hace']],
+    ['flow', ['how it flows', 'como fluye']],
+    ['where', ['where it lives', 'donde vive']],
+  ];
+
+// Normalize a "## ..." heading to a comparable form, or null if the line is
+// not a level-2 heading.
+function normalizeHeading(line: string): string | null {
+  if (!line.startsWith('## ')) return null;
+  return line
+    .slice(3)
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+// The canonical section a heading line opens, or null if it is not one of the
+// three structural headings (i.e. it is free-form content).
+function canonicalSection(line: string): SectionKey | null {
+  const text = normalizeHeading(line);
+  if (text === null) return null;
+  for (const [key, aliases] of SECTION_ALIASES) {
+    if (aliases.includes(text)) return key;
+  }
+  return null;
+}
 
 export class MarkdownParseError extends Error {
   constructor(message: string, public readonly path?: string) {
@@ -22,6 +64,13 @@ export class MarkdownParseError extends Error {
 export function parseEntry(raw: string, path?: string): Entry {
   const parsed = matter(raw);
   const frontmatter = coerceDates(parsed.data) as Partial<EntryFrontmatter>;
+
+  // content_hashes is an optional bookkeeping map (used by the drift checker).
+  // Default it to empty rather than rejecting an otherwise-valid entry that
+  // omits it — a missing map just means "no hashes recorded yet".
+  if (frontmatter.content_hashes == null) {
+    frontmatter.content_hashes = {};
+  }
 
   validateFrontmatter(frontmatter, path);
 
@@ -64,7 +113,6 @@ function validateFrontmatter(
     'last_verified',
     'file_paths',
     'symbols',
-    'content_hashes',
     'tags',
   ];
   for (const key of required) {
@@ -83,17 +131,17 @@ function validateFrontmatter(
 function parseBody(content: string, path: string | undefined): EntryBody {
   const sections = splitSections(content);
 
-  const what = sections.get(SECTION_WHAT);
-  const where = sections.get(SECTION_WHERE);
+  const what = sections.get('what');
+  const where = sections.get('where');
 
-  if (!what) {
+  if (what === undefined) {
     throw new MarkdownParseError(`Missing "${SECTION_WHAT}" section`, path);
   }
-  if (!where) {
+  if (where === undefined) {
     throw new MarkdownParseError(`Missing "${SECTION_WHERE}" section`, path);
   }
 
-  const flow = sections.get(SECTION_FLOW) ?? null;
+  const flow = sections.get('flow') ?? null;
   const flowMermaid = flow ? extractMermaid(flow) : null;
 
   return {
@@ -103,24 +151,34 @@ function parseBody(content: string, path: string | undefined): EntryBody {
   };
 }
 
-function splitSections(content: string): Map<string, string> {
+function splitSections(content: string): Map<SectionKey, string> {
   const lines = content.split('\n');
-  const sections = new Map<string, string>();
-  let currentHeader: string | null = null;
+  const sections = new Map<SectionKey, string>();
+  let currentKey: SectionKey | null = null;
   let buffer: string[] = [];
+  let inFence = false;
 
   const flush = () => {
-    if (currentHeader !== null) {
-      sections.set(currentHeader, buffer.join('\n'));
+    if (currentKey !== null) {
+      sections.set(currentKey, buffer.join('\n'));
     }
   };
 
   for (const line of lines) {
-    if (line.startsWith('## ')) {
+    // Track fenced code blocks so a "## ..." line inside ``` is treated as
+    // content, never as a section boundary.
+    if (line.trimStart().startsWith('```')) {
+      inFence = !inFence;
+    }
+
+    const key = inFence ? null : canonicalSection(line);
+    if (key !== null) {
       flush();
-      currentHeader = line.trimEnd();
+      currentKey = key;
       buffer = [];
-    } else if (currentHeader !== null) {
+    } else if (currentKey !== null) {
+      // Non-structural "## ..." headings and all other lines are content of
+      // the current section.
       buffer.push(line);
     }
   }

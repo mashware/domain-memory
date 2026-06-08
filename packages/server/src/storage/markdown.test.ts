@@ -184,6 +184,132 @@ describe('markdown parser', () => {
     expect(parsed.frontmatter.file_paths).toEqual(entry.frontmatter.file_paths);
   });
 
+  it('accepts localized (Spanish) section headings, accent-insensitive', () => {
+    const raw = [
+      '---',
+      'id: asp_test',
+      'slug: test',
+      'name: Test',
+      'type: aspect',
+      'feature_id: feat_test',
+      'status: active',
+      'confidence: 80',
+      'created_at: 2026-04-11T10:00:00Z',
+      'updated_at: 2026-04-11T10:00:00Z',
+      'last_verified: 2026-04-11T10:00:00Z',
+      'file_paths: []',
+      'symbols: []',
+      'content_hashes: {}',
+      'tags: []',
+      '---',
+      '## Qué hace',
+      'Hace cosas.',
+      '## Cómo fluye',
+      '```mermaid',
+      'flowchart TD',
+      '  A --> B',
+      '```',
+      '## Dónde vive',
+      '- src/test.ts',
+    ].join('\n');
+
+    const entry = parseEntry(raw);
+    expect(entry.body.what).toBe('Hace cosas.');
+    expect(entry.body.flow_mermaid).toBe('flowchart TD\n  A --> B');
+    expect(entry.body.where).toBe('- src/test.ts');
+  });
+
+  it('keeps non-structural "## ..." subheadings as content, not boundaries', () => {
+    const raw = [
+      '---',
+      'id: feat_test',
+      'slug: test',
+      'name: Test',
+      'type: feature',
+      'status: active',
+      'confidence: 80',
+      'created_at: 2026-04-11T10:00:00Z',
+      'updated_at: 2026-04-11T10:00:00Z',
+      'last_verified: 2026-04-11T10:00:00Z',
+      'file_paths: []',
+      'symbols: []',
+      'content_hashes: {}',
+      'tags: []',
+      '---',
+      '## Qué hace',
+      'Intro.',
+      '',
+      '## Por qué importa',
+      'Razón crítica que no debe perderse.',
+      '## Dónde vive',
+      'y',
+    ].join('\n');
+
+    const entry = parseEntry(raw);
+    expect(entry.body.what).toContain('Intro.');
+    expect(entry.body.what).toContain('## Por qué importa');
+    expect(entry.body.what).toContain('Razón crítica que no debe perderse.');
+  });
+
+  it('defaults content_hashes to {} when the field is absent', () => {
+    const raw = [
+      '---',
+      'id: feat_test',
+      'slug: test',
+      'name: Test',
+      'type: feature',
+      'status: active',
+      'confidence: 80',
+      'created_at: 2026-04-11T10:00:00Z',
+      'updated_at: 2026-04-11T10:00:00Z',
+      'last_verified: 2026-04-11T10:00:00Z',
+      'file_paths: []',
+      'symbols: []',
+      'tags: []',
+      '---',
+      '## What it does',
+      'x',
+      '## Where it lives',
+      'y',
+    ].join('\n');
+
+    const entry = parseEntry(raw);
+    expect(entry.frontmatter.content_hashes).toEqual({});
+  });
+
+  it('does not treat a "## ..." line inside a fenced code block as a boundary', () => {
+    const raw = [
+      '---',
+      'id: feat_test',
+      'slug: test',
+      'name: Test',
+      'type: feature',
+      'status: active',
+      'confidence: 80',
+      'created_at: 2026-04-11T10:00:00Z',
+      'updated_at: 2026-04-11T10:00:00Z',
+      'last_verified: 2026-04-11T10:00:00Z',
+      'file_paths: []',
+      'symbols: []',
+      'content_hashes: {}',
+      'tags: []',
+      '---',
+      '## What it does',
+      '```sh',
+      '## Where it lives  # this is a shell comment, not a heading',
+      'echo hi',
+      '```',
+      'real content',
+      '## Where it lives',
+      'y',
+    ].join('\n');
+
+    const entry = parseEntry(raw);
+    expect(entry.body.what).toContain('## Where it lives  # this is a shell comment');
+    expect(entry.body.what).toContain('real content');
+    expect(entry.body.where).toBe('y');
+  });
+
   it('summaryOf returns the full body.what when within the char budget', () => {
     const entry = makeEntry('First paragraph.\n\nSecond paragraph.');
     expect(summaryOf(entry)).toBe('First paragraph.\n\nSecond paragraph.');

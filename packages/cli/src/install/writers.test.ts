@@ -4,6 +4,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -14,6 +15,7 @@ import {
   resolveServerCommand,
   updateGitignore,
   writeConfig,
+  writeGitHook,
   writeInstructions,
   writeMcpRegistration,
   writePointerBlock,
@@ -247,6 +249,57 @@ describe('install writers', () => {
         readFileSync(join(root, '.mcp.json'), 'utf-8'),
       ) as Record<string, Record<string, unknown>>;
       expect(Object.keys(parsed['mcpServers']!)).toEqual(['domain-memory']);
+    });
+  });
+
+  describe('writeGitHook', () => {
+    const HOOK_START = '# >>> domain-memory pre-push >>>';
+
+    function initGitDir(): string {
+      const hooks = join(root, '.git', 'hooks');
+      mkdirSync(hooks, { recursive: true });
+      return join(hooks, 'pre-push');
+    }
+
+    function isExecutable(path: string): boolean {
+      return (statSync(path).mode & 0o111) !== 0;
+    }
+
+    it('skips when the project is not a git repo', () => {
+      expect(writeGitHook(ctx)).toBe('skipped-no-git');
+      expect(existsSync(join(root, '.git', 'hooks', 'pre-push'))).toBe(false);
+    });
+
+    it('creates an executable pre-push hook with a shebang and our block', () => {
+      const target = initGitDir();
+      const result = writeGitHook(ctx);
+      expect(result).toBe('created');
+      const content = readFileSync(target, 'utf-8');
+      expect(content.startsWith('#!/bin/sh')).toBe(true);
+      expect(content).toContain(HOOK_START);
+      expect(content).toContain('domain-memory staging-status --quiet');
+      expect(isExecutable(target)).toBe(true);
+    });
+
+    it('is idempotent — running twice keeps a single block', () => {
+      const target = initGitDir();
+      writeGitHook(ctx);
+      const second = writeGitHook(ctx);
+      expect(second).toBe('updated');
+      const content = readFileSync(target, 'utf-8');
+      expect((content.match(/>>> domain-memory pre-push >>>/g) ?? []).length).toBe(1);
+    });
+
+    it('appends to a foreign pre-push hook without clobbering it', () => {
+      const target = initGitDir();
+      writeFileSync(target, '#!/bin/sh\necho "lint check"\nexit 0\n', 'utf-8');
+
+      const result = writeGitHook(ctx);
+      expect(result).toBe('chained');
+      const content = readFileSync(target, 'utf-8');
+      expect(content).toContain('echo "lint check"');
+      expect(content).toContain(HOOK_START);
+      expect(isExecutable(target)).toBe(true);
     });
   });
 

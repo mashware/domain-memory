@@ -3,7 +3,8 @@
 // idempotently. Safe to re-run — it will update existing files in
 // place instead of duplicating.
 
-import { dirname } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import prompts from 'prompts';
 import pc from 'picocolors';
@@ -12,6 +13,7 @@ import {
   resolveServerCommand,
   updateGitignore,
   writeConfig,
+  writeGitHook,
   writeInstructions,
   writeMcpRegistration,
   writePointerBlock,
@@ -24,6 +26,9 @@ export interface InstallOptions {
   root: string;
   clients?: ClientId[];
   yes?: boolean;
+  // tri-state: true = install the pre-push hook, false = skip it,
+  // undefined = ask interactively (and skip under --yes).
+  gitHook?: boolean;
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -89,6 +94,8 @@ export async function runInstall(opts: InstallOptions): Promise<void> {
     }
   }
 
+  await maybeInstallGitHook(ctx, opts);
+
   process.stdout.write(
     '\n' +
       pc.green('Install complete.') +
@@ -130,6 +137,42 @@ async function chooseClients(
   });
 
   return (response['selected'] as ClientId[] | undefined) ?? [];
+}
+
+// Installs the opt-in pre-push reminder hook. Decides whether to install
+// from the tri-state opts.gitHook: explicit flag wins; otherwise prompt
+// interactively, and skip silently under --yes. Never installs (and says
+// so) when the project is not a standard git repo.
+async function maybeInstallGitHook(
+  ctx: WriteContext,
+  opts: InstallOptions,
+): Promise<void> {
+  if (!existsSync(join(ctx.projectRoot, '.git', 'hooks'))) return;
+
+  let want: boolean;
+  if (opts.gitHook !== undefined) {
+    want = opts.gitHook;
+  } else if (opts.yes) {
+    want = false;
+  } else {
+    const response = await prompts({
+      type: 'confirm',
+      name: 'install',
+      message:
+        'Install a non-blocking pre-push hook that reminds you of unconsolidated findings?',
+      initial: false,
+    });
+    want = response['install'] === true;
+  }
+
+  if (!want) return;
+
+  const result = writeGitHook(ctx);
+  if (result === 'chained') {
+    logStep('git pre-push hook (appended to your existing hook)');
+  } else if (result !== 'skipped-no-git') {
+    logStep('.git/hooks/pre-push (staging reminder)');
+  }
 }
 
 function logStep(line: string): void {

@@ -14,6 +14,7 @@ import { runDecay } from './commands/decay.js';
 import { runExport } from './commands/export.js';
 import { runBootstrap } from './commands/bootstrap.js';
 import { runEnrich } from './commands/enrich.js';
+import { runStagingStatus } from './commands/staging-status.js';
 import type { ClientId } from './install/detect.js';
 
 const program = new Command();
@@ -41,16 +42,26 @@ program
     'Comma-separated client ids to configure (skips the prompt)',
   )
   .option('-y, --yes', 'Accept defaults without prompting', false)
+  .option(
+    '--git-hook',
+    'Install the non-blocking pre-push staging reminder without prompting',
+  )
   .action(
     async (opts: {
       root: string;
       clients?: string;
       yes: boolean;
+      gitHook?: boolean;
     }) => {
       const clients = opts.clients
         ? (opts.clients.split(',').map((s) => s.trim()) as ClientId[])
         : undefined;
-      await runInstall({ root: opts.root, clients, yes: opts.yes });
+      await runInstall({
+        root: opts.root,
+        clients,
+        yes: opts.yes,
+        gitHook: opts.gitHook,
+      });
     },
   );
 
@@ -190,6 +201,27 @@ program
       const filesFromStdin = filesFromFlag.length === 0 ? await readStdinLines() : [];
       const files = filesFromFlag.length > 0 ? filesFromFlag : filesFromStdin;
       const code = await runCheckDrift({ root: opts.root, files, json: opts.json });
+      process.exit(code);
+    },
+  );
+
+program
+  .command('staging-status')
+  .description(
+    'Report unconsolidated staged findings for a branch (read-only; for git hooks)',
+  )
+  .option('-r, --root <path>', 'Project root (defaults to cwd)', process.cwd())
+  .option('-b, --branch <name>', 'Branch to check (defaults to the current git branch)')
+  .option('--json', 'Emit JSON instead of a human-readable report', false)
+  .option('--quiet', 'Print nothing when there is nothing to report', false)
+  .action(
+    async (opts: { root: string; branch?: string; json: boolean; quiet: boolean }) => {
+      const code = await runStagingStatus({
+        root: opts.root,
+        branch: opts.branch,
+        json: opts.json,
+        quiet: opts.quiet,
+      });
       process.exit(code);
     },
   );

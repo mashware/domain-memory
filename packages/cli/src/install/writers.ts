@@ -127,8 +127,15 @@ function upsertOpencodeMcp(
   servers['domain-memory'] = {
     type: 'local',
     command: [srv.command, ...srv.args],
+    // Explicit on purpose: OpenCode's schema documents no default for a
+    // local server's "enabled", so we pin it rather than rely on one.
+    enabled: true,
   };
-  return { ...current, [rootKey]: servers };
+  const withSchema =
+    '$schema' in current
+      ? current
+      : { $schema: 'https://opencode.ai/config.json', ...current };
+  return { ...withSchema, [rootKey]: servers };
 }
 
 function readJsonIfExists(path: string): Record<string, unknown> {

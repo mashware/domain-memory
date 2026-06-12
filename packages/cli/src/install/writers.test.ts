@@ -150,17 +150,66 @@ describe('install writers', () => {
       });
     });
 
-    it('uses opencode-mcp shape (mcp, type:local, command as array) for OpenCode', () => {
+    it('uses opencode-mcp shape (mcp, type:local, command as array, enabled) for OpenCode', () => {
       writeMcpRegistration(ctx, CLIENTS['opencode']);
       const target = join(root, 'opencode.json');
       const parsed = JSON.parse(readFileSync(target, 'utf-8')) as Record<
         string,
-        Record<string, Record<string, unknown>>
+        unknown
       >;
-      expect(parsed['mcp']!['domain-memory']).toEqual({
+      expect(parsed['$schema']).toBe('https://opencode.ai/config.json');
+      const mcp = parsed['mcp'] as Record<string, Record<string, unknown>>;
+      expect(mcp['domain-memory']).toEqual({
         type: 'local',
         command: ['node', ...FAKE_SERVER.args],
+        enabled: true,
       });
+    });
+
+    it('does not overwrite an existing $schema and keeps other OpenCode keys', () => {
+      const target = join(root, 'opencode.json');
+      writeFileSync(
+        target,
+        JSON.stringify(
+          {
+            $schema: 'https://custom.example/schema.json',
+            model: 'anthropic/claude-opus-4',
+            mcp: {
+              'other-server': { type: 'local', command: ['python', 'x.py'] },
+            },
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      );
+
+      writeMcpRegistration(ctx, CLIENTS['opencode']);
+      const parsed = JSON.parse(readFileSync(target, 'utf-8')) as Record<
+        string,
+        unknown
+      >;
+      expect(parsed['$schema']).toBe('https://custom.example/schema.json');
+      expect(parsed['model']).toBe('anthropic/claude-opus-4');
+      const mcp = parsed['mcp'] as Record<string, Record<string, unknown>>;
+      expect(mcp['other-server']).toEqual({
+        type: 'local',
+        command: ['python', 'x.py'],
+      });
+      expect(mcp['domain-memory']).toEqual({
+        type: 'local',
+        command: ['node', ...FAKE_SERVER.args],
+        enabled: true,
+      });
+    });
+
+    it('is idempotent for OpenCode — re-running keeps a single entry', () => {
+      writeMcpRegistration(ctx, CLIENTS['opencode']);
+      writeMcpRegistration(ctx, CLIENTS['opencode']);
+      const parsed = JSON.parse(
+        readFileSync(join(root, 'opencode.json'), 'utf-8'),
+      ) as Record<string, Record<string, unknown>>;
+      expect(Object.keys(parsed['mcp']!)).toEqual(['domain-memory']);
     });
 
     it('merges into an existing config without clobbering other servers', () => {

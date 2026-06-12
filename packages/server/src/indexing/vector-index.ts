@@ -32,6 +32,30 @@ export class VectorIndex {
     this.db.prepare('DELETE FROM entries_vec WHERE entry_id = ?').run(entryId);
   }
 
+  // Reads back the persisted embedding for an entry. Returns null when the
+  // entry has no vector (never indexed, or indexed while the embedder was
+  // down). Useful for entry-to-entry similarity without re-embedding text,
+  // so it works even when the live embedder is unavailable.
+  getEmbedding(entryId: string): Float32Array | null {
+    const row = this.db
+      .prepare('SELECT embedding FROM entries_vec WHERE entry_id = ?')
+      .get(entryId) as { embedding: Buffer | Uint8Array } | undefined;
+    if (!row) return null;
+
+    const bytes = Buffer.isBuffer(row.embedding)
+      ? row.embedding
+      : Buffer.from(row.embedding);
+    if (bytes.byteLength < EMBEDDING_DIM * 4) return null;
+
+    // vec0 stores the raw little-endian float32 bytes. Copy element-by-element
+    // rather than aliasing the Buffer, which may be pooled/misaligned.
+    const out = new Float32Array(EMBEDDING_DIM);
+    for (let i = 0; i < EMBEDDING_DIM; i += 1) {
+      out[i] = bytes.readFloatLE(i * 4);
+    }
+    return out;
+  }
+
   search(embedding: Float32Array, limit: number): VectorMatch[] {
     if (embedding.length !== EMBEDDING_DIM) {
       throw new Error(

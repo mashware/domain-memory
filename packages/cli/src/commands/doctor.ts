@@ -4,7 +4,10 @@
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, relative } from 'node:path';
-import { createServerContext } from '@mashware/domain-memory-server';
+import {
+  createServerContext,
+  findContradictionCandidates,
+} from '@mashware/domain-memory-server';
 import pc from 'picocolors';
 
 export interface DoctorOptions {
@@ -153,6 +156,27 @@ export async function runDoctor(opts: DoctorOptions): Promise<number> {
           message: `Staging file ${f} is ${Math.round(ageDays)} days old — consider consolidating or discarding`,
         });
       }
+    }
+  }
+
+  // Advisory only: pairs of entries that overlap enough to be worth a look.
+  // Mechanical signal — overlap is not contradiction; an agent decides whether
+  // they actually conflict. Never affects the exit code.
+  const contradictions = findContradictionCandidates(ctx.db, ctx.vectors);
+  if (contradictions.candidates.length > 0) {
+    const shown = contradictions.candidates.length;
+    const suffix =
+      contradictions.total > shown ? ` (showing top ${shown})` : '';
+    findings.push({
+      level: 'info',
+      message: `Possible contradictions to review: ${contradictions.total}${suffix} — ask an agent to check whether each pair conflicts`,
+    });
+    for (const c of contradictions.candidates) {
+      const sameFeature = c.sameFeature ? ', same feature' : '';
+      findings.push({
+        level: 'info',
+        message: `  ~ "${c.a.name}" ↔ "${c.b.name}" (${Math.round(c.similarity * 100)}% similar${sameFeature})`,
+      });
     }
   }
 

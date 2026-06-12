@@ -164,7 +164,7 @@ If you want to hack on the project itself, see [CONTRIBUTING.md](CONTRIBUTING.md
 | `domain-memory bootstrap [--source-root path]` | Scan a mature project and write `.domain-memory/bootstrap-plan.md` — a checklist of candidate features for the agent to process with you. Prints a ready-to-paste prompt. See "Mature projects" below. |
 | `domain-memory enrich <id\|slug>` | Print a guided prompt to deepen an existing feature entry. Useful for ritualized "spend 20 minutes improving checkout" sessions. |
 | `domain-memory reindex [--fresh]` | Rebuilds `index.sqlite` and embeddings from the markdown files on disk. Use `--fresh` to wipe the index first. |
-| `domain-memory doctor` | Read-only health check: index vs. disk consistency, broken file references, embedding coverage, stale staging files. |
+| `domain-memory doctor` | Read-only health check: index vs. disk consistency, broken file references, embedding coverage, stale staging files, and possible-contradiction candidates (entries that overlap enough to be worth a review). |
 | `domain-memory verify <entry-id>` | Mark an entry as verified now. Resets the lazy confidence decay clock. Body unchanged. |
 | `domain-memory check-drift --files a.ts,b.ts` | Print the knowledge entries that reference the given files. Supports `--json` and stdin for git hooks. |
 | `domain-memory staging-status [--branch name]` | Report how many unconsolidated findings are staged on a branch. Read-only, always exits 0. Supports `--json` and `--quiet` — the engine behind the optional pre-push reminder. |

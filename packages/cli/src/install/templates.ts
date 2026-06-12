@@ -60,3 +60,10 @@ export function readSlashCommandTemplate(): string {
     'utf-8',
   );
 }
+
+export function readPrePushHookTemplate(): string {
+  return readFileSync(
+    resolve(resolveTemplatesDir(), 'git-hooks', 'pre-push'),
+    'utf-8',
+  );
+}

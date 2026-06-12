@@ -3,6 +3,7 @@
 // server registrations, or repeated .gitignore lines.
 
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -13,12 +14,16 @@ import { CLIENTS, type ClientId, type ClientInfo } from './detect.js';
 import {
   readInstructionsTemplate,
   readPointerBlock,
+  readPrePushHookTemplate,
   readPrimerTemplate,
   readSlashCommandTemplate,
 } from './templates.js';
 
 const POINTER_START = '<!-- domain-memory:start -->';
 const POINTER_END = '<!-- domain-memory:end -->';
+
+const HOOK_START = '# >>> domain-memory pre-push >>>';
+const HOOK_END = '# <<< domain-memory pre-push <<<';
 
 export interface WriteContext {
   projectRoot: string;
@@ -187,6 +192,52 @@ export function writeSlashCommand(ctx: WriteContext): void {
   const target = join(ctx.projectRoot, client.extras.slashCommandFile);
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, readSlashCommandTemplate(), 'utf-8');
+}
+
+// ----- pre-push git hook (opt-in) --------------------------------------
+
+export type GitHookResult = 'created' | 'updated' | 'chained' | 'skipped-no-git';
+
+// Installs a non-blocking pre-push hook that reminds the user of
+// unconsolidated staging. Idempotent: re-running keeps a single block.
+// If a foreign pre-push hook already exists, our block is appended rather
+// than clobbering it — best-effort, since the hook is non-blocking anyway.
+export function writeGitHook(ctx: WriteContext): GitHookResult {
+  const hooksDir = join(ctx.projectRoot, '.git', 'hooks');
+  // Only standard, non-bare repos with a .git/hooks directory are handled.
+  // Worktrees, submodules, or a custom core.hooksPath are out of scope —
+  // we skip rather than guess and write to the wrong place.
+  if (!existsSync(hooksDir)) return 'skipped-no-git';
+
+  const target = join(hooksDir, 'pre-push');
+  const block = readPrePushHookTemplate().trim();
+
+  if (!existsSync(target)) {
+    writeFileSync(target, `#!/bin/sh\n${block}\n`, 'utf-8');
+    chmodSync(target, 0o755);
+    return 'created';
+  }
+
+  const current = readFileSync(target, 'utf-8');
+  const startIdx = current.indexOf(HOOK_START);
+  const endIdx = current.indexOf(HOOK_END);
+
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    const before = current.slice(0, startIdx).replace(/\s+$/, '');
+    const after = current.slice(endIdx + HOOK_END.length).replace(/^\s+/, '');
+    const joined = [before, block, after].filter((s) => s.length > 0).join('\n\n');
+    writeFileSync(target, joined.endsWith('\n') ? joined : `${joined}\n`, 'utf-8');
+    chmodSync(target, 0o755);
+    return 'updated';
+  }
+
+  // Foreign hook present and no block of ours yet — append it. If the
+  // existing hook exits before reaching our block the reminder simply
+  // won't fire; it never breaks the push.
+  const trimmed = current.replace(/\s+$/, '');
+  writeFileSync(target, `${trimmed}\n\n${block}\n`, 'utf-8');
+  chmodSync(target, 0o755);
+  return 'chained';
 }
 
 export function updateGitignore(ctx: WriteContext, clients: ClientId[]): void {

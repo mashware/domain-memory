@@ -1,0 +1,9 @@
+# >>> domain-memory pre-push >>>
+# Reminds you of unconsolidated domain-memory findings before a push.
+# Non-blocking: always exits 0 and stays silent when there is nothing to
+# report. Degrades to a no-op if the domain-memory CLI is not installed.
+# Remove this block (or delete the file) to disable.
+if command -v domain-memory >/dev/null 2>&1; then
+  domain-memory staging-status --quiet 2>/dev/null || true
+fi
+# <<< domain-memory pre-push <<<

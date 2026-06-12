@@ -62,6 +62,8 @@ Each entry carries three layers:
 
 While you work, the agent appends **findings** to `.domain-memory/staging/<branch>.jsonl`. Findings survive session compaction, browser closes, new sessions on the same branch — indexed by git branch, not by session id. When you open a PR or run `/save-knowledge`, the staging is consolidated into real entries.
 
+If you sometimes push without going through the agent, those findings can sit unconsolidated. The optional **pre-push reminder** closes that gap: `domain-memory install --git-hook` writes a non-blocking `.git/hooks/pre-push` that prints a one-line nudge when the branch you are pushing still has staged findings. It never blocks the push, stays silent when there is nothing to consolidate, and is a no-op if the CLI is not on `PATH`. It is opt-in — plain `install` asks before touching `.git/hooks`.
+
 ### Triple matcher
 
 `search_knowledge` runs three matchers in parallel and fuses them:
@@ -136,7 +138,7 @@ npm update -g @mashware/domain-memory
 npm uninstall -g @mashware/domain-memory
 ```
 
-To remove domain-memory from a specific project: delete `.domain-memory/`, remove the `<!-- domain-memory:start -->` block from the client instruction files, and drop the `domain-memory` entry from `.mcp.json` / `.cursor/mcp.json` / `.vscode/mcp.json` / `.gemini/settings.json` / `opencode.json`.
+To remove domain-memory from a specific project: delete `.domain-memory/`, remove the `<!-- domain-memory:start -->` block from the client instruction files, and drop the `domain-memory` entry from `.mcp.json` / `.cursor/mcp.json` / `.vscode/mcp.json` / `.gemini/settings.json` / `opencode.json`. If you installed the pre-push reminder, also remove the `# >>> domain-memory pre-push >>>` block from `.git/hooks/pre-push` (or delete the file if it contains nothing else).
 
 ### From source (contributors)
 
@@ -148,13 +150,14 @@ If you want to hack on the project itself, see [CONTRIBUTING.md](CONTRIBUTING.md
 
 | Command | What it does |
 |---|---|
-| `domain-memory install` | Interactive setup. Detects which MCP clients the project uses and writes pointer blocks, MCP registrations, and `.gitignore` entries idempotently. |
+| `domain-memory install` | Interactive setup. Detects which MCP clients the project uses and writes pointer blocks, MCP registrations, and `.gitignore` entries idempotently. Pass `--git-hook` to also install the pre-push reminder without prompting. |
 | `domain-memory bootstrap [--source-root path]` | Scan a mature project and write `.domain-memory/bootstrap-plan.md` — a checklist of candidate features for the agent to process with you. Prints a ready-to-paste prompt. See "Mature projects" below. |
 | `domain-memory enrich <id\|slug>` | Print a guided prompt to deepen an existing feature entry. Useful for ritualized "spend 20 minutes improving checkout" sessions. |
 | `domain-memory reindex [--fresh]` | Rebuilds `index.sqlite` and embeddings from the markdown files on disk. Use `--fresh` to wipe the index first. |
 | `domain-memory doctor` | Read-only health check: index vs. disk consistency, broken file references, embedding coverage, stale staging files. |
 | `domain-memory verify <entry-id>` | Mark an entry as verified now. Resets the lazy confidence decay clock. Body unchanged. |
 | `domain-memory check-drift --files a.ts,b.ts` | Print the knowledge entries that reference the given files. Supports `--json` and stdin for git hooks. |
+| `domain-memory staging-status [--branch name]` | Report how many unconsolidated findings are staged on a branch. Read-only, always exits 0. Supports `--json` and `--quiet` — the engine behind the optional pre-push reminder. |
 | `domain-memory web [--port 4373]` | Start the local read-only viewer. |
 | `domain-memory http [--port 4374] [--host 127.0.0.1]` | Start an HTTP API exposing the same tools as the MCP server (for CI hooks and external scripts). Set `DOMAIN_MEMORY_HTTP_TOKEN` to require bearer-token auth. |
 | `domain-memory decay [--write]` | Report (or persist with `--write`) the lazy confidence decay into the stored values. Maintenance command. |

@@ -14,6 +14,16 @@ The goal is to capture the **why** behind the code: the stuff a new developer wo
 
 > **Status**: Functional. Local install, single developer, local SQLite.
 
+## What this is
+
+Domain Memory is a **living glossary of your project's business domain** — the concepts, rules, entities, and the *why* behind decisions — that grows as you build. The frame that matters: this is **semantic memory** (what "a German invoice" or "a deactivated account" means in your project, and why it behaves the way it does), not **episodic memory** (what you changed last Tuesday and in which commit). The episodic record already lives in git history; Domain Memory holds the part no diff captures.
+
+You don't stop to write documentation. As the agent works it records findings on its own, and they are folded into the glossary when you run `/save-knowledge` or open a pull request — so the knowledge accrues from real work instead of becoming a separate authoring chore you have to remember.
+
+Everything is **plain markdown you own and version in git**. Each entry is a human-readable file under `.domain-memory/`; the search index is derived from those files and can be rebuilt from them at any time, so the knowledge stays portable, reviewable in a pull request, and never locked inside a database.
+
+If what you want is a history of work sessions, cross-machine sync, or generic per-user assistant memory, this is deliberately not that. Domain Memory stays narrow on purpose: the domain knowledge of one project, and nothing else.
+
 ## How is this different from…
 
 Domain Memory occupies a narrow niche. The closest neighbours and where it differs:

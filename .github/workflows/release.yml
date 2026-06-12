@@ -140,3 +140,31 @@ jobs:
             - [`@mashware/domain-memory-server`](https://www.npmjs.com/package/@mashware/domain-memory-server)
             - [`@mashware/domain-memory-web`](https://www.npmjs.com/package/@mashware/domain-memory-web)
             - [`@mashware/domain-memory`](https://www.npmjs.com/package/@mashware/domain-memory)
+
+      # ----- MCP Registry (preview) -----------------------------------------
+      # Publish the server's metadata to registry.modelcontextprotocol.io so it
+      # shows up in MCP client discovery. The registry only stores metadata that
+      # points at the npm package published above. Ownership is proven by the
+      # `mcpName` field in packages/server/package.json (which must equal the
+      # `name` in server.json) plus GitHub OIDC for the io.github.mashware/*
+      # namespace — no extra secret required. The registry is in preview, so
+      # this flow may need updates as it stabilises.
+      - name: Sync server.json version to the tag
+        env:
+          GIT_TAG: ${{ github.ref_name }}
+        run: |
+          version="${GIT_TAG#v}"
+          jq --arg v "$version" '.version = $v | .packages |= map(.version = $v)' \
+            server.json > server.tmp
+          mv server.tmp server.json
+          cat server.json
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry (GitHub OIDC)
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish
